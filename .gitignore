@@ -26,3 +26,4 @@ hs_err_pid*
 
 # certain not needed files
 src/Examples/
+tests/ExampleTests.java
