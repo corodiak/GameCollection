@@ -23,3 +23,6 @@ hs_err_pid*
 
 # intelliJ files
 *.idea
+
+# certain not needed files
+/d/Documents/Programmieren/Java/GameCollection/src/Examples/
