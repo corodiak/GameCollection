@@ -4,7 +4,6 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.GroupLayout;
@@ -20,7 +19,7 @@ import java.awt.event.ActionListener;
 public class SettingsGUI extends JPanel implements ActionListener {
     private JButton start;
     private JLabel labelWidth, labelHeight, labelMines;
-    private JTextField tFieldWidth, tFieldHeight, tFieldMines;
+    private IntegerField tFieldWidth, tFieldHeight, tFieldMines;
     private boolean settingWarnings = false;
     public static JFrame settingsFrame = new JFrame("Minesweeper");
 
@@ -73,7 +72,6 @@ public class SettingsGUI extends JPanel implements ActionListener {
      *
      * @param e
      */
-    @Override
     public void actionPerformed(ActionEvent e) {
         if ("start".equals(e.getActionCommand())) {
             settingWarnings = false;
@@ -84,12 +82,16 @@ public class SettingsGUI extends JPanel implements ActionListener {
                 createAndShowSettingsWarningGUI();
             } else {
                 settingsFrame.setVisible(false);
+                BoardGUI.createAndShowGUI(Integer.parseInt(tFieldHeight.getText()),
+                        Integer.parseInt(tFieldWidth.getText()),Integer.parseInt(tFieldMines.getText()));
             }
         }
     }
 
     /**
      * Checks if the setting for the given type is valid
+     *
+     * Check if the amount of mines is more than available field happens later
      * @param type
      */
     private void checkCorrectnessOfSettings(String type) {
@@ -103,6 +105,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
                 break;
             case "mines":
                 notValid = tFieldMines.getText().isEmpty();
+                //TODO: CHECK IF AMOUNT OF MINES IS VALID
                 break;
         }
         if (notValid) {
