@@ -12,7 +12,6 @@ import javax.swing.LayoutStyle;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 /**
  * GUI for the pre-game settings
@@ -22,7 +21,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
     private JButton start;
     private JLabel labelWidth, labelHeight, labelMines;
     private JTextField tFieldWidth, tFieldHeight, tFieldMines;
-    private ArrayList<String> settingWarnings = new ArrayList<>();
+    private boolean settingWarnings = false;
     public static JFrame settingsFrame = new JFrame("Minesweeper");
 
     /**
@@ -49,9 +48,9 @@ public class SettingsGUI extends JPanel implements ActionListener {
         labelMines.setHorizontalTextPosition(JLabel.CENTER);
         labelMines.setMinimumSize(new Dimension(100, 15));
 
-        tFieldWidth = new JTextField(5);
-        tFieldHeight = new JTextField(5);
-        tFieldMines = new JTextField(5);
+        tFieldWidth = new IntegerField(5);
+        tFieldHeight = new IntegerField(5);
+        tFieldMines = new IntegerField(5);
 
         //Listen for actions on buttons.
         start.addActionListener(this);
@@ -77,11 +76,11 @@ public class SettingsGUI extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("start".equals(e.getActionCommand())) {
-            settingWarnings.clear();
+            settingWarnings = false;
             checkCorrectnessOfSettings("height");
             checkCorrectnessOfSettings("width");
             checkCorrectnessOfSettings("mines");
-            if (!settingWarnings.isEmpty()) {
+            if (settingWarnings) {
                 createAndShowSettingsWarningGUI();
             } else {
                 settingsFrame.setVisible(false);
@@ -94,23 +93,20 @@ public class SettingsGUI extends JPanel implements ActionListener {
      * @param type
      */
     private void checkCorrectnessOfSettings(String type) {
-        String value = "";
+        Boolean notValid = false;
         switch (type) {
             case "height":
-                value = tFieldHeight.getText();
+                notValid = tFieldHeight.getText().isEmpty();
                 break;
             case "width":
-                value = tFieldWidth.getText();
+                notValid = tFieldWidth.getText().isEmpty();
                 break;
             case "mines":
-                value = tFieldMines.getText();
+                notValid = tFieldMines.getText().isEmpty();
                 break;
         }
-
-        try {
-            Integer.parseInt(value);
-        } catch (NumberFormatException nFE) {
-            settingWarnings.add(type);
+        if (notValid) {
+            settingWarnings = true;
         }
     }
 
@@ -118,22 +114,9 @@ public class SettingsGUI extends JPanel implements ActionListener {
      * Creates a pop-up window with informations about which settings are invalid
      */
     private void createAndShowSettingsWarningGUI() {
-        String invalidSettings = "";
-        String warningMessage;
-        for (String warning : settingWarnings) {
-            invalidSettings = invalidSettings.concat(warning + ", ");
-        }
-        invalidSettings = invalidSettings.substring(0, invalidSettings.length() - 2);
-
-        if (settingWarnings.size() > 1) {
-            warningMessage = "Your " + invalidSettings + " game settings contain non numeric characters or are empty.";
-        } else { //settingWarnings.size() == 1
-            warningMessage = "Your " + invalidSettings + " game setting contains non numeric characters or is empty.";
-        }
-
         JFrame errorFrame = new JFrame();
         JOptionPane.showMessageDialog(errorFrame,
-                warningMessage,
+                "One or more of your game settings is empty",
                 "Invalid settings warning",
                 JOptionPane.WARNING_MESSAGE);
     }
@@ -143,7 +126,6 @@ public class SettingsGUI extends JPanel implements ActionListener {
      */
     private static void createAndShowGUI() {
         //Create and set up the window.
-//        JFrame settingsFrame = new JFrame("Minesweeper");
         settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         settingsFrame.setResizable(false);
 
