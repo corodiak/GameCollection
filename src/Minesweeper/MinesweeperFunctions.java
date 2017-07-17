@@ -1,6 +1,8 @@
 package Minesweeper;
 
 import javax.swing.JButton;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -11,6 +13,7 @@ import java.util.Random;
  * - Reveal fields recursive if field has no mines around
  */
 public class MinesweeperFunctions {
+    private static List<JButton> placedMines;
 
     /**
      * Distributes randomly a given amount of mines on a board
@@ -22,6 +25,7 @@ public class MinesweeperFunctions {
      * @return board with randomly distributed mines
      */
     public static JButton[][] distributeMines(JButton[][] board, int height, int width, int mines) {
+        placedMines = new ArrayList<>() ;
         Random rn = new Random();
         while (mines !=0) {
             int rnHeight = rn.nextInt(height);
@@ -30,6 +34,7 @@ public class MinesweeperFunctions {
             if (!isMine(board[rnHeight][rnWidth].getName())) {
                 //A mine gets identified by it's last char of the button name
                 board[rnHeight][rnWidth].setName(board[rnHeight][rnWidth].getName() + ",*");
+                placedMines.add(board[rnHeight][rnWidth]);
                 mines--;
 //                System.out.println("MINE SET AT: " + board[rnHeight][rnWidth].getName());
             }
@@ -53,12 +58,7 @@ public class MinesweeperFunctions {
      * @return true if button is a mine
      */
     public static boolean isMine(String buttonName) {
-        String lastChar = buttonName.substring(buttonName.length() - 1);
-        if (lastChar.equals("*")) {
-            return true;
-        } else {
-            return false;
-        }
+        return buttonName.contains("*");
     }
 
     /**
@@ -74,54 +74,19 @@ public class MinesweeperFunctions {
             for (int h = 0; h < height; h++) {
                 foundMines = 0;
                 if (!isMine(board[h][w].getName())) {
-                    //TODO: FIND A SMARTER WAY FOR THIS
-                    try {
-                        if (isMine(board[h - 1][w - 1].getName())) {
-                            foundMines++;
+                    //This double loop checks every button around the center, including center, for mines
+                    //Only if center is no mine
+                    for (int x = 1; x >= -1; x--) {
+                        for (int y = 1; y >= -1; y--) {
+                            try {
+                                if (isMine(board[h-x][w-y].getName())) {
+                                    foundMines++;
+                                }
+                            } catch (IndexOutOfBoundsException iOBE) {
+                                //Do nothing when caught an exception
+                                //Therefore continue loop
+                            }
                         }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h - 1][w].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h - 1][w + 1].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h][w - 1].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h][w + 1].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h + 1][w - 1].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h + 1][w].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
-                    }
-                    try {
-                        if (isMine(board[h + 1][w + 1].getName())) {
-                            foundMines++;
-                        }
-                    } catch (IndexOutOfBoundsException iOBE) { //Do nothing
                     }
                     board[h][w].setName(board[h][w].getName() + "," + foundMines);
                 }
@@ -136,12 +101,67 @@ public class MinesweeperFunctions {
      * @param buttonName
      * @return
      */
-
     public static String getNeighborValue(String buttonName) {
         return buttonName.substring(buttonName.length() - 1);
     }
 
-    public JButton[][] recursiveReveal(JButton[][] board) {
+    /**
+     * Reveal all neighbors of aa button.
+     * If one neighbor is also 0, call method again with said neighbor
+     * @param board
+     * @param buttonName
+     * @return
+     */
+    public static JButton[][] revealNeighbors(JButton[][] board, String buttonName) {
+        int h = getButtonCoordinates(buttonName)[0];
+        int w = getButtonCoordinates(buttonName)[1];
+        //Reveal the middle
+        board[h][w].setEnabled(false);
+        board[h][w].setText(getNeighborValue(board[h][w].getName()));
+        BoardGUI.revealedButtons++;
+
+        for (int x = 1; x >= -1; x--) {
+            for (int y = 1; y >= -1; y--) {
+                try {
+                    //If revealed neighbor is also 0, reveal it's neighbors
+                    //Reveal only if not already revealed
+                    if (getNeighborValue(board[h-x][w-y].getName()).equals("0")
+                            && board[h-x][w-y].isEnabled()) {
+                        revealNeighbors(board, board[h - x][w - y].getName());
+                    } else if (board[h-x][w-y].isEnabled()) {
+                        //Reveal the neighbor and increment total count of revealed buttons
+                        board[h-x][w-y].setEnabled(false);
+                        board[h-x][w-y].setText(getNeighborValue(board[h-x][w-y].getName()));
+                        BoardGUI.revealedButtons++;
+                    }
+                } catch (IndexOutOfBoundsException iOBE) {
+                    //Do nothing when caught an exception
+                    //Therefore continue loop
+                }
+            }
+        }
+        return board;
+    }
+
+    private static int[] getButtonCoordinates(String buttonName) {
+        int[] coordinates = new int [2];
+        //h coordinate
+        coordinates[0] = Character.getNumericValue(buttonName.charAt(0));
+        //w coordinate
+        coordinates[1] = Character.getNumericValue(buttonName.charAt(2));
+        return coordinates;
+    }
+
+    /**
+     * Reveals all mines when game is lost
+     * @param board
+     * @return
+     */
+    public static JButton[][] gameLost(JButton[][] board) {
+        for (JButton mine : placedMines) {
+            mine.setEnabled(false);
+            mine.setText(getNeighborValue(mine.getName()));
+        }
         return board;
     }
 }
