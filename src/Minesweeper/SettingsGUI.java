@@ -20,7 +20,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
     private JButton start;
     private JLabel labelWidth, labelHeight, labelMines;
     private IntegerField tFieldWidth, tFieldHeight, tFieldMines;
-    private boolean settingWarnings = false;
+    private boolean settingWarnings = false, mines = false;
     public static JFrame settingsFrame = new JFrame("Minesweeper");
 
     /**
@@ -78,8 +78,9 @@ public class SettingsGUI extends JPanel implements ActionListener {
             checkCorrectnessOfSettings("height");
             checkCorrectnessOfSettings("width");
             checkCorrectnessOfSettings("mines");
+            checkCorrectnessOfSettings("amount");
             if (settingWarnings) {
-                createAndShowSettingsWarningGUI();
+                createAndShowSettingsWarningGUI(mines);
             } else {
                 settingsFrame.setVisible(false);
                 BoardGUI.createAndShowGUI(Integer.parseInt(tFieldHeight.getText()),
@@ -95,33 +96,45 @@ public class SettingsGUI extends JPanel implements ActionListener {
      * @param type
      */
     private void checkCorrectnessOfSettings(String type) {
-        Boolean notValid = false;
         switch (type) {
             case "height":
-                notValid = tFieldHeight.getText().isEmpty();
+                settingWarnings = tFieldHeight.getText().isEmpty();
                 break;
             case "width":
-                notValid = tFieldWidth.getText().isEmpty();
+                settingWarnings = tFieldWidth.getText().isEmpty();
                 break;
             case "mines":
-                notValid = tFieldMines.getText().isEmpty();
-                //TODO: CHECK IF AMOUNT OF MINES IS VALID
+                settingWarnings = tFieldMines.getText().isEmpty();
                 break;
-        }
-        if (notValid) {
-            settingWarnings = true;
+            case "amount":
+                if (!settingWarnings) {
+                    if(Integer.parseInt(tFieldHeight.getText()) * Integer.parseInt(tFieldWidth.getText())
+                            < Integer.parseInt(tFieldMines.getText())) {
+                        settingWarnings = true;
+                        mines = true;
+                    }
+                }
+                break;
         }
     }
 
     /**
      * Creates a pop-up window with informations about which settings are invalid
      */
-    private void createAndShowSettingsWarningGUI() {
+    private void createAndShowSettingsWarningGUI(boolean mines) {
         JFrame errorFrame = new JFrame();
-        JOptionPane.showMessageDialog(errorFrame,
-                "One or more of your game settings is empty",
-                "Invalid settings warning",
-                JOptionPane.WARNING_MESSAGE);
+        if (mines) {
+            JOptionPane.showMessageDialog(errorFrame,
+                    "You have set too many mines.",
+                    "Invalid settings warning",
+                    JOptionPane.WARNING_MESSAGE);
+
+        } else {
+            JOptionPane.showMessageDialog(errorFrame,
+                    "One or more of your game settings is empty",
+                    "Invalid settings warning",
+                    JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     /**
