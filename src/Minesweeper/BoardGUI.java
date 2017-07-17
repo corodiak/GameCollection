@@ -30,7 +30,7 @@ public class BoardGUI extends JPanel implements ActionListener {
                 //Create a new button on position [h][w]
                 //Name contains the coordinates in the board and later information about neighbors and itself
                 board[h][w] = new JButton();
-                board[h][w].setText("  ");
+                board[h][w].setText("   ");
                 board[h][w].setName(Integer.toString(h) + "," + Integer.toString(w));
 //                board[h][w].setText(board[h][w].getName());
                 board[h][w].setActionCommand("reveal");
@@ -39,9 +39,6 @@ public class BoardGUI extends JPanel implements ActionListener {
             }
             add(row);
         }
-//        //Populate each button with necessary informations
-//        board = MinesweeperFunctions.distributeMines(board, height, width, mines);
-//        board = MinesweeperFunctions.countNeighbors(board, height, width);
     }
 
     /**
@@ -56,15 +53,16 @@ public class BoardGUI extends JPanel implements ActionListener {
         if ("reveal".equals(e.getActionCommand())) {
             System.out.println("REVEAL");
             JButton triggered = (JButton) e.getSource();
-            System.out.println("NAME: " + triggered.getName());
+            //Check for first button
             if (revealedButtons == 0) {
                 //Populate each button with necessary informations
-                board = MinesweeperFunctions.distributeMines(board, height, width, mines);
-                board = MinesweeperFunctions.countNeighbors(board, height, width);
+                MinesweeperFunctions.prepareStart(board, triggered);
+                MinesweeperFunctions.distributeMines(board, height, width, mines);
+                MinesweeperFunctions.countNeighbors(board, height, width);
             }
             //Revealed a mine -> lose
             if (MinesweeperFunctions.isMine(triggered.getName())) {
-                MinesweeperFunctions.gameLost(board);
+                MinesweeperFunctions.gameLost();
                 createAndShowLoseGUI();
                 boardFrame.dispose();
                 SettingsGUI.settingsFrame.setVisible(true);
@@ -85,6 +83,7 @@ public class BoardGUI extends JPanel implements ActionListener {
                     SettingsGUI.settingsFrame.setVisible(true);
                 }
             }
+            System.out.println("NAME: " + triggered.getName());
         }
     }
 
@@ -95,7 +94,7 @@ public class BoardGUI extends JPanel implements ActionListener {
 
         boardFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         boardFrame.setResizable(false);
-        boardPane.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        boardPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         boardFrame.add(boardPane);
 
         //Display the window
