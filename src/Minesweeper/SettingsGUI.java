@@ -109,7 +109,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
             case "amount":
                 if (!settingWarnings) {
                     if(Integer.parseInt(tFieldHeight.getText()) * Integer.parseInt(tFieldWidth.getText())
-                            < Integer.parseInt(tFieldMines.getText())) {
+                            < Integer.parseInt(tFieldMines.getText()) - 9) {
                         settingWarnings = true;
                         mines = true;
                     }

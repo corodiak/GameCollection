@@ -88,7 +88,6 @@ public class BoardGUI extends JPanel implements ActionListener {
     }
 
     public static void createAndShowGUI(int height, int width, int mines) {
-        //TODO: Prevent GUI shift when board is too big and 0 is revealed
         boardFrame = new JFrame("Minesweeper");
         BoardGUI boardPane = new BoardGUI(height, width, mines);
 

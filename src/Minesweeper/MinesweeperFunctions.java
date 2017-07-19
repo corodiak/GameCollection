@@ -171,12 +171,14 @@ public class MinesweeperFunctions {
     }
 
     private static int[] getButtonCoordinates(String buttonName) {
-        //TODO: Return correct coordinates for dimensions > 9
         int[] coordinates = new int[2];
+        String[] values = buttonName.split(",");
         //h coordinate
-        coordinates[0] = Character.getNumericValue(buttonName.charAt(0));
+        coordinates[0] = Integer.parseInt(values[0]);
         //w coordinate
-        coordinates[1] = Character.getNumericValue(buttonName.charAt(2));
+        coordinates[1] = Integer.parseInt(values[1]);
+
+
         return coordinates;
     }
 
