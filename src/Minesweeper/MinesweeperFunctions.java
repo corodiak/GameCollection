@@ -65,6 +65,7 @@ public class MinesweeperFunctions {
             }
         }
 
+//        //Prepared Exampleboard for debug purpose
 //        board[3][0].setName(board[3][0].getName() + ",*");
 //        board[4][4].setName(board[4][4].getName() + ",*");
 //        board[0][1].setName(board[0][1].getName() + ",*");
@@ -73,6 +74,14 @@ public class MinesweeperFunctions {
 //        board[0][4].setName(board[0][4].getName() + ",*");
 //        board[2][0].setName(board[2][0].getName() + ",*");
 //        board[4][2].setName(board[4][2].getName() + ",*");
+//        placedMines.add(board[3][0]);
+//        placedMines.add(board[4][4]);
+//        placedMines.add(board[0][1]);
+//        placedMines.add(board[4][0]);
+//        placedMines.add(board[0][3]);
+//        placedMines.add(board[0][4]);
+//        placedMines.add(board[2][0]);
+//        placedMines.add(board[4][2]);
     }
 
     /**
@@ -87,6 +96,13 @@ public class MinesweeperFunctions {
      */
     private static boolean isStart(String buttonName) {
         return buttonName.contains("S");
+    }
+
+    /**
+     * Checks if a button is flagged
+     */
+    public static boolean isFlagged(JButton button) {
+        return button.getText().equals("F");
     }
 
     /**
@@ -133,13 +149,27 @@ public class MinesweeperFunctions {
     }
 
     /**
-     * Reveal all neighbors of aa button.
+     * Reveal only one button
+     * @param board
+     * @param buttonName
+     */
+    public static void revealButton(JButton[][] board, String buttonName) {
+        int h = getButtonCoordinates(buttonName)[0];
+        int w = getButtonCoordinates(buttonName)[1];
+
+        board[h][w].setEnabled(false);
+        board[h][w].setText(getNeighborValue(buttonName));
+        BoardGUI.revealedButtons++;
+    }
+
+    /**
+     * Reveal all neighbors of a button.
      * If one neighbor is also 0, call method again with said neighbor
      * @param board
      * @param buttonName
      * @return
      */
-    public static void revealNeighbors(JButton[][] board, String buttonName) {
+    public static void revealNeighborsRecursive(JButton[][] board, String buttonName) {
         int h = getButtonCoordinates(buttonName)[0];
         int w = getButtonCoordinates(buttonName)[1];
         //Reveal the middle
@@ -151,16 +181,18 @@ public class MinesweeperFunctions {
         for (int x = 1; x >= -1; x--) {
             for (int y = 1; y >= -1; y--) {
                 try {
-                    //If revealed neighbor is also 0, reveal it's neighbors
-                    //Reveal only if not already revealed
-                    if (getNeighborValue(board[h - x][w - y].getName()).equals("0")
-                            && board[h - x][w - y].isEnabled()) {
-                        revealNeighbors(board, board[h - x][w - y].getName());
-                    } else if (board[h - x][w - y].isEnabled()) {
-                        //Reveal the neighbor and increment total count of revealed buttons
-                        board[h - x][w - y].setEnabled(false);
-                        board[h - x][w - y].setText(getNeighborValue(board[h - x][w - y].getName()));
-                        BoardGUI.revealedButtons++;
+                    if (!isFlagged(board[h - x][w - y])) {
+                        //If revealed neighbor is also 0, reveal it's neighbors
+                        //Reveal only if not already revealed
+                        if (getNeighborValue(board[h - x][w - y].getName()).equals("0")
+                                && board[h - x][w - y].isEnabled()) {
+                            revealNeighborsRecursive(board, board[h - x][w - y].getName());
+                        } else if (board[h - x][w - y].isEnabled()) {
+                            //Reveal the neighbor and increment total count of revealed buttons
+                            board[h - x][w - y].setEnabled(false);
+                            board[h - x][w - y].setText(getNeighborValue(board[h - x][w - y].getName()));
+                            BoardGUI.revealedButtons++;
+                        }
                     }
                 } catch (IndexOutOfBoundsException iOBE) {
                     //Do nothing when caught an exception
@@ -170,6 +202,65 @@ public class MinesweeperFunctions {
         }
     }
 
+    /**
+     * Reveals all neighbors of only one button
+     */
+    public static boolean revealButtonNeighbors(JButton[][] board, String buttonName) {
+        int h = getButtonCoordinates(buttonName)[0];
+        int w = getButtonCoordinates(buttonName)[1];
+        int neighborValue = Integer.parseInt(getNeighborValue(buttonName));
+        ArrayList<JButton> neighbors = new ArrayList<>();
+
+        for (int x = 1; x >= -1; x--) {
+            for (int y = 1; y >= -1; y--) {
+                try {
+                    neighbors.add(board[h - x][w - y]);
+                } catch (IndexOutOfBoundsException iOBE) {
+                    //Do nothing when caught an exception
+                    //Therefore continue loop
+                }
+
+            }
+        }
+
+        if (neighborValue == countFlaggedNeighbors(neighbors)) {
+            for (JButton button : neighbors) {
+                if (!isFlagged(button)) {
+                    if (isMine(button.getName())) {
+                        return true;
+                    } else {
+                        button.setEnabled(false);
+                        if (!getNeighborValue(button.getName()).equals("0")) {
+                            button.setText(getNeighborValue(button.getName()));
+                        }
+                        BoardGUI.revealedButtons++;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Counts the neighbors with a flag
+     * @param buttons
+     * @return
+     */
+    private static int countFlaggedNeighbors(ArrayList<JButton> buttons) {
+        int count = 0;
+        for (JButton button : buttons) {
+            if (isFlagged(button)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Extracts the height and width coordinate from the button name
+     * @param buttonName
+     * @return Array with coordinates
+     */
     private static int[] getButtonCoordinates(String buttonName) {
         int[] coordinates = new int[2];
         String[] values = buttonName.split(",");
@@ -178,19 +269,35 @@ public class MinesweeperFunctions {
         //w coordinate
         coordinates[1] = Integer.parseInt(values[1]);
 
-
         return coordinates;
     }
 
     /**
      * Reveals all mines when game is lost
-     *
      * @return
      */
     public static void gameLost() {
         for (JButton mine : placedMines) {
             mine.setEnabled(false);
             mine.setText(getNeighborValue(mine.getName()));
+        }
+    }
+
+    /**
+     * Checks if all mines are flagged
+     * @return
+     */
+    public static boolean allMinesFlagged() {
+        int count = 0;
+        for (JButton mine : placedMines) {
+            if (isFlagged(mine)) {
+                count++;
+            }
+        }
+        if (count == placedMines.size()) {
+            return true;
+        } else {
+            return false;
         }
     }
 }
