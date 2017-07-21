@@ -76,7 +76,7 @@ public class BoardGUI extends JPanel implements ActionListener {
                         }
                         //Check if middle mouse button was activated
                     } else if (SwingUtilities.isMiddleMouseButton(e)) {
-                        if (!triggered.isEnabled() || !MinesweeperFunctions.isFlagged(triggered)) {
+                        if (!triggered.isEnabled()) {
                             //Reveal all neighbors of clicked button and checks if mine was revealed
                             boolean revealedMine = MinesweeperFunctions.revealButtonNeighbors(board, triggered.getName());
                             if (revealedMine) {

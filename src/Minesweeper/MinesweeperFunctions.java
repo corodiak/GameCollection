@@ -204,6 +204,7 @@ public class MinesweeperFunctions {
 
     /**
      * Reveals all neighbors of only one button
+     * @return true when a mine is revealed this way
      */
     public static boolean revealButtonNeighbors(JButton[][] board, String buttonName) {
         int h = getButtonCoordinates(buttonName)[0];
@@ -225,12 +226,14 @@ public class MinesweeperFunctions {
 
         if (neighborValue == countFlaggedNeighbors(neighbors)) {
             for (JButton button : neighbors) {
-                if (!isFlagged(button)) {
+                if (!isFlagged(button) && button.isEnabled()) {
                     if (isMine(button.getName())) {
                         return true;
                     } else {
                         button.setEnabled(false);
-                        if (!getNeighborValue(button.getName()).equals("0")) {
+                        if (getNeighborValue(button.getName()).equals("0")) {
+                            revealNeighborsRecursive(board, button.getName());
+                        } else {
                             button.setText(getNeighborValue(button.getName()));
                         }
                         BoardGUI.revealedButtons++;
