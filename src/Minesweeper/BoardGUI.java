@@ -1,8 +1,9 @@
 package Minesweeper;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import java.awt.*;
 import java.awt.event.*;
-import java.awt.GridLayout;
 
 /**
  * GUI for the game board
@@ -11,8 +12,11 @@ public class BoardGUI extends JPanel implements ActionListener {
     private static JFrame boardFrame;
     private static int size, mines, height, width;
     public static int revealedButtons = 0, flaggedMines = 0;
+    private long startTime = 0;
     private JButton[][] board;
+    private JLabel leftMinesLabel, elapsedTimeLabel;
     private MouseAdapter mouseListener;
+    private Timer timer;
 
     private BoardGUI(int height, int width, int mines) {
         initialiseMouseListener();
@@ -22,8 +26,34 @@ public class BoardGUI extends JPanel implements ActionListener {
         BoardGUI.height = height;
         BoardGUI.width = width;
         BoardGUI.mines = mines;
+        leftMinesLabel = new JLabel("Mines left: " + (mines - flaggedMines), JLabel.CENTER);
+        leftMinesLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+        elapsedTimeLabel = new JLabel("Time: " + startTime, JLabel.LEFT);
+        elapsedTimeLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+        initialiseTimer();
+
         //Create a 2D array of buttons with height * width
         board = new JButton[height][width];
+
+        //Create Panels which hold parts of the game
+        JPanel totalBoardPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gBC = new GridBagConstraints();
+
+        //Constraints for elapsedTimeLabel
+        gBC.fill = GridBagConstraints.HORIZONTAL;
+        gBC.gridx = 0;
+        gBC.gridy = 0;
+        totalBoardPanel.add(elapsedTimeLabel, gBC);
+
+        //Constraints for leftMinesLabel
+        gBC.fill = GridBagConstraints.HORIZONTAL;
+        gBC.gridx = 2;
+        gBC.gridy = 0;
+        totalBoardPanel.add(leftMinesLabel, gBC);
+
+        //This panel contains the board
+        JPanel boardPanel = new JPanel();
+        boardPanel.setBorder(BorderFactory.createLoweredBevelBorder());
         //Iterate through the board
         for (int w = 0; w < width; w++) {
             //Prepare Gridlayout
@@ -33,14 +63,26 @@ public class BoardGUI extends JPanel implements ActionListener {
                 //Name contains the coordinates in the board and later information about neighbors and itself
                 board[h][w] = new JButton();
                 board[h][w].setText("   ");
+                board[h][w].setForeground(Color.RED);
                 board[h][w].setName(Integer.toString(h) + "," + Integer.toString(w));
                 board[h][w].setActionCommand("reveal");
                 board[h][w].addActionListener(this);
                 board[h][w].addMouseListener(mouseListener);
                 row.add(board[h][w]);
             }
-            add(row);
+            //Add the row to the board
+            boardPanel.add(row);
         }
+
+        //Constraints for boardPanel
+        gBC.fill = GridBagConstraints.HORIZONTAL;
+        gBC.gridwidth = 3;
+        gBC.gridx = 0;
+        gBC.gridy = 1;
+        totalBoardPanel.add(boardPanel, gBC);
+
+        //Add all of the board to the container
+        add(totalBoardPanel);
     }
 
     /**
@@ -60,15 +102,18 @@ public class BoardGUI extends JPanel implements ActionListener {
                             if (MinesweeperFunctions.isFlagged(triggered)) {
                                 triggered.setText("   ");
                                 flaggedMines--;
+                                leftMinesLabel.setText("Mines left: " + (mines - flaggedMines));
                             } else {
                                 triggered.setText("F");
                                 flaggedMines++;
+                                leftMinesLabel.setText("Mines left: " + (mines - flaggedMines));
                             }
                         }
                         //Check if all mines are flagged
                         if (flaggedMines == mines) {
                             if (MinesweeperFunctions.allMinesFlagged()) {
                                 //All mines are flagged -> Win
+                                timer.stop();
                                 createAndShowWinGUI();
                                 boardFrame.dispose();
                                 SettingsGUI.settingsFrame.setVisible(true);
@@ -81,6 +126,7 @@ public class BoardGUI extends JPanel implements ActionListener {
                             boolean revealedMine = MinesweeperFunctions.revealButtonNeighbors(board, triggered.getName());
                             if (revealedMine) {
                                 //Mine was revealed -> Lose
+                                timer.stop();
                                 MinesweeperFunctions.gameLost();
                                 createAndShowLoseGUI();
                                 boardFrame.dispose();
@@ -91,6 +137,17 @@ public class BoardGUI extends JPanel implements ActionListener {
                 }
             }
         };
+    }
+
+    private void initialiseTimer(){
+        timer = new javax.swing.Timer(1000,
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        long elapsed = System.currentTimeMillis() - startTime;
+                        long elapsedSeconds = elapsed / 1000;
+                        elapsedTimeLabel.setText("Time: " + Long.toString(elapsedSeconds));
+                    }
+                });
     }
 
     /**
@@ -106,6 +163,8 @@ public class BoardGUI extends JPanel implements ActionListener {
             JButton triggered = (JButton) e.getSource();
             //Check for first button
             if (revealedButtons == 0) {
+                startTime = System.currentTimeMillis();
+                timer.start();
                 //Populate each button with necessary informations
                 MinesweeperFunctions.prepareStart(board, triggered);
                 MinesweeperFunctions.distributeMines(board, height, width, mines);
@@ -114,6 +173,7 @@ public class BoardGUI extends JPanel implements ActionListener {
             //Revealed a mine -> Lose
             if (!MinesweeperFunctions.isFlagged(triggered)) {
                 if (MinesweeperFunctions.isMine(triggered.getName())) {
+                    timer.stop();
                     MinesweeperFunctions.gameLost();
                     createAndShowLoseGUI();
                     boardFrame.dispose();
@@ -128,13 +188,13 @@ public class BoardGUI extends JPanel implements ActionListener {
                     }
                     if (revealedButtons >= size - mines) {
                         //All non mines revealed -> win
+                        timer.stop();
                         createAndShowWinGUI();
                         boardFrame.dispose();
                         SettingsGUI.settingsFrame.setVisible(true);
                     }
                 }
             }
-//            System.out.println("NAME: " + triggered.getName());
         }
     }
 
@@ -151,7 +211,6 @@ public class BoardGUI extends JPanel implements ActionListener {
             }
         });
         boardFrame.setResizable(false);
-        boardPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         boardFrame.add(boardPane);
 
         //Display the window

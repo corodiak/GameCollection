@@ -174,7 +174,6 @@ public class MinesweeperFunctions {
         int w = getButtonCoordinates(buttonName)[1];
         //Reveal the middle
         board[h][w].setEnabled(false);
-//        board[h][w].setText(getNeighborValue(board[h][w].getName()));
         board[h][w].setText("   ");
         BoardGUI.revealedButtons++;
 
