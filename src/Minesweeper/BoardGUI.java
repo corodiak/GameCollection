@@ -1,7 +1,6 @@
 package Minesweeper;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -26,9 +25,11 @@ public class BoardGUI extends JPanel implements ActionListener {
         BoardGUI.height = height;
         BoardGUI.width = width;
         BoardGUI.mines = mines;
-        leftMinesLabel = new JLabel("Mines left: " + (mines - flaggedMines), JLabel.CENTER);
+        leftMinesLabel = new JLabel("Mines left: " + (mines - flaggedMines), JLabel.LEFT);
         leftMinesLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+        leftMinesLabel.setPreferredSize(new Dimension(90, 20));
         elapsedTimeLabel = new JLabel("Time: " + startTime, JLabel.LEFT);
+        elapsedTimeLabel.setPreferredSize(new Dimension(70, 20));
         elapsedTimeLabel.setBorder(BorderFactory.createLoweredBevelBorder());
         initialiseTimer();
 
@@ -40,15 +41,14 @@ public class BoardGUI extends JPanel implements ActionListener {
         GridBagConstraints gBC = new GridBagConstraints();
 
         //Constraints for elapsedTimeLabel
-        gBC.fill = GridBagConstraints.HORIZONTAL;
         gBC.gridx = 0;
         gBC.gridy = 0;
         totalBoardPanel.add(elapsedTimeLabel, gBC);
 
         //Constraints for leftMinesLabel
-        gBC.fill = GridBagConstraints.HORIZONTAL;
         gBC.gridx = 2;
         gBC.gridy = 0;
+        gBC.anchor = GridBagConstraints.NORTHEAST;
         totalBoardPanel.add(leftMinesLabel, gBC);
 
         //This panel contains the board
@@ -65,6 +65,7 @@ public class BoardGUI extends JPanel implements ActionListener {
                 board[h][w].setText("   ");
                 board[h][w].setForeground(Color.RED);
                 board[h][w].setName(Integer.toString(h) + "," + Integer.toString(w));
+                board[h][w].setFocusable(false);
                 board[h][w].setActionCommand("reveal");
                 board[h][w].addActionListener(this);
                 board[h][w].addMouseListener(mouseListener);
@@ -237,7 +238,7 @@ public class BoardGUI extends JPanel implements ActionListener {
     public static void main(String[] args) throws Exception {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                createAndShowGUI(5, 5, 8);
+                createAndShowGUI(10, 10, 20);
             }
         });
     }
