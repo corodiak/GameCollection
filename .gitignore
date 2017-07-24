@@ -25,5 +25,7 @@ hs_err_pid*
 *.idea
 
 # certain not needed files
+out/
 src/Examples/
+src/META-INF/
 tests/ExampleTests.java
