@@ -1,5 +1,6 @@
 package Minesweeper;
 
+import Main.MainGUI;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.AbstractButton;
@@ -17,7 +18,8 @@ import java.awt.event.ActionListener;
  * - Height, width, amount of mines
  */
 public class SettingsGUI extends JPanel implements ActionListener {
-    private JButton start;
+    private String[] args;
+    private JButton startBtn, backBtn;
     private JLabel labelWidth, labelHeight, labelMines;
     private IntegerField tFieldWidth, tFieldHeight, tFieldMines;
     private boolean settingWarnings = false, mines = false;
@@ -27,10 +29,16 @@ public class SettingsGUI extends JPanel implements ActionListener {
      * Definition for Buttons, labels and textfields
      */
     private SettingsGUI() {
-        start = new JButton("Start Game");
-        start.setVerticalTextPosition(AbstractButton.CENTER);
-        start.setHorizontalTextPosition(AbstractButton.LEADING);
-        start.setActionCommand("start");
+        startBtn = new JButton("Start Game");
+        startBtn.setVerticalTextPosition(AbstractButton.CENTER);
+        startBtn.setHorizontalTextPosition(AbstractButton.LEADING);
+        startBtn.setActionCommand("start");
+
+        backBtn = new JButton("Back to selection");
+        backBtn.setFocusable(false);
+        backBtn.setVerticalTextPosition(AbstractButton.CENTER);
+        backBtn.setHorizontalTextPosition(AbstractButton.LEADING);
+        backBtn.setActionCommand("back");
 
         labelWidth = new JLabel("Field width:", JLabel.LEFT);
         labelWidth.setVerticalTextPosition(JLabel.BOTTOM);
@@ -52,13 +60,16 @@ public class SettingsGUI extends JPanel implements ActionListener {
         tFieldMines = new IntegerField(5);
 
         //Listen for actions on buttons.
-        start.addActionListener(this);
+        startBtn.addActionListener(this);
+        backBtn.addActionListener(this);
 
         //Set tooltips
-        start.setToolTipText("Click this button to start a new game.");
+        startBtn.setToolTipText("Click this button to start a new game.");
+        backBtn.setToolTipText("Go back to the game selection.");
 
         //Add Components to container
-        add(start);
+        add(startBtn);
+        add(backBtn);
         add(labelWidth);
         add(labelHeight);
         add(labelMines);
@@ -68,7 +79,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
     }
 
     /**
-     * Checks if start button is pressed and if all settings are valid
+     * Checks if startBtn button is pressed and if all settings are valid
      *
      * @param e
      */
@@ -86,6 +97,9 @@ public class SettingsGUI extends JPanel implements ActionListener {
                 BoardGUI.createAndShowGUI(Integer.parseInt(tFieldHeight.getText()),
                         Integer.parseInt(tFieldWidth.getText()),Integer.parseInt(tFieldMines.getText()));
             }
+        } else if ("back".equals(e.getActionCommand())) {
+            settingsFrame.dispose();
+            MainGUI.main(args);
         }
     }
 
@@ -162,6 +176,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
         GroupLayout.SequentialGroup hHeight = layout.createSequentialGroup();
         GroupLayout.SequentialGroup hWidth = layout.createSequentialGroup();
         GroupLayout.SequentialGroup hMines = layout.createSequentialGroup();
+        GroupLayout.SequentialGroup hbuttons = layout.createSequentialGroup();
 
         hHeight.addComponent(settingsPane.labelHeight);
         hHeight.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
@@ -175,19 +190,24 @@ public class SettingsGUI extends JPanel implements ActionListener {
         hMines.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         hMines.addComponent(settingsPane.tFieldMines);
 
+        hbuttons.addComponent(settingsPane.backBtn);
+        hbuttons.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED);
+        hbuttons.addComponent(settingsPane.startBtn);
+
         //Set horizontal group as parallel group of sequential groups
         layout.setHorizontalGroup(
                 layout.createParallelGroup()
                         .addGroup(hHeight)
                         .addGroup(hWidth)
                         .addGroup(hMines)
-                        .addComponent(settingsPane.start, GroupLayout.Alignment.CENTER)
+                        .addGroup(hbuttons)
         );
 
         //Define Horizontal group
         GroupLayout.ParallelGroup vHeight = layout.createParallelGroup();
         GroupLayout.ParallelGroup vWidth = layout.createParallelGroup();
         GroupLayout.ParallelGroup vMines = layout.createParallelGroup();
+        GroupLayout.ParallelGroup vbuttons = layout.createParallelGroup();
 
         vHeight.addComponent(settingsPane.labelHeight);
         vHeight.addComponent(settingsPane.tFieldHeight);
@@ -198,13 +218,16 @@ public class SettingsGUI extends JPanel implements ActionListener {
         vMines.addComponent(settingsPane.labelMines);
         vMines.addComponent(settingsPane.tFieldMines);
 
+        vbuttons.addComponent(settingsPane.backBtn);
+        vbuttons.addComponent(settingsPane.startBtn);
+
         //Set vertical group as sequential group of parallel groups
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
                         .addGroup(vHeight)
                         .addGroup(vWidth)
                         .addGroup(vMines)
-                        .addComponent(settingsPane.start)
+                        .addGroup(vbuttons)
         );
 
         //Display the window.
@@ -212,7 +235,7 @@ public class SettingsGUI extends JPanel implements ActionListener {
         settingsFrame.setVisible(true);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
