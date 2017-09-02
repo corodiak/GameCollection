@@ -54,9 +54,9 @@ public class MainGUI extends JPanel implements ActionListener {
         if ("minesweeper".equals(e.getActionCommand())) {
             gameSelectionFrame.dispose();
             SettingsGUI.main(args);
-        } else if ("minesweeper".equals(e.getActionCommand())) {
+        } else if ("yahtzee".equals(e.getActionCommand())) {
             gameSelectionFrame.dispose();
-        } else if ("minesweeper".equals(e.getActionCommand())) {
+        } else if ("madn".equals(e.getActionCommand())) {
             gameSelectionFrame.dispose();
         }
     }
