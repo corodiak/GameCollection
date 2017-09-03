@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
+import java.util.ArrayList;
 
 /**
  * GUI for the game
@@ -20,6 +21,8 @@ public class BoardGUI extends JPanel implements ActionListener {
     private JTextField leftScoreTField, rightScoreTField, totalScoreTField;
     private JButton throwBtn;
     private JCheckBox dice1CBox, dice2CBox, dice3CBox, dice4CBox, dice5CBox;
+    private ArrayList<JCheckBox> throwableDice = new ArrayList<>();
+    private int keptDice = 0, numberThrows = 0, turn = 1;
 
     private BoardGUI() {
         onlyOnesLable = new JLabel("One", JLabel.CENTER);
@@ -192,19 +195,39 @@ public class BoardGUI extends JPanel implements ActionListener {
         throwBtn.addActionListener(this);
 
         dice1CBox = new JCheckBox();
+        dice1CBox.setName("1");
         dice1CBox.setToolTipText("Check to safe this die");
+        dice1CBox.setActionCommand("check");
+        dice1CBox.addActionListener(this);
+        throwableDice.add(dice1CBox);
 
         dice2CBox = new JCheckBox();
+        dice2CBox.setName("1");
         dice2CBox.setToolTipText("Check to safe this die");
+        dice2CBox.setActionCommand("check");
+        dice2CBox.addActionListener(this);
+        throwableDice.add(dice2CBox);
 
         dice3CBox = new JCheckBox();
+        dice3CBox.setName("1");
         dice3CBox.setToolTipText("Check to safe this die");
+        dice3CBox.setActionCommand("check");
+        dice3CBox.addActionListener(this);
+        throwableDice.add(dice3CBox);
 
         dice4CBox = new JCheckBox();
+        dice4CBox.setName("1");
         dice4CBox.setToolTipText("Check to safe this die");
+        dice4CBox.setActionCommand("check");
+        dice4CBox.addActionListener(this);
+        throwableDice.add(dice4CBox);
 
         dice5CBox = new JCheckBox();
+        dice5CBox.setName("1");
         dice5CBox.setToolTipText("Check to safe this die");
+        dice5CBox.setActionCommand("check");
+        dice5CBox.addActionListener(this);
+        throwableDice.add(dice5CBox);
 
         add(onlyOnesLable);
         add(onlyTwosLable);
@@ -256,8 +279,43 @@ public class BoardGUI extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if ("throw".equals(e.getActionCommand())) {
-
+            System.out.println("THROW");
+            YahtzeeFunctions.throwDice(throwableDice);
+            this.updateDice();
+            numberThrows++;
+            // if (numberThrows == 3 ) {
+            //      write points
+            // }
+        } else if ("check".equals(e.getActionCommand())) {
+            System.out.println("CHECK");
+            JCheckBox source = (JCheckBox) e.getSource();
+            source.setActionCommand("uncheck");
+            throwableDice.remove(source);
+            keptDice++;
+            if (keptDice == 5) {
+                throwBtn.setActionCommand("end");
+                //TODO: Prevent resize
+                throwBtn.setText("End Turn");
+                throwBtn.setToolTipText("Keep all your dice and get points now.");
+            }
+        } else if ("uncheck".equals(e.getActionCommand())) {
+            System.out.println("UNCHECK");
+            JCheckBox source = (JCheckBox) e.getSource();
+            source.setActionCommand("check");
+            throwableDice.add(source);
+            keptDice--;
+        } else if ("end".equals(e.getActionCommand())) {
+            System.out.println("END");
+            // write points
         }
+    }
+
+    private void updateDice() {
+        dice1Label.setText(dice1CBox.getName());
+        dice2Label.setText(dice2CBox.getName());
+        dice3Label.setText(dice3CBox.getName());
+        dice4Label.setText(dice4CBox.getName());
+        dice5Label.setText(dice5CBox.getName());
     }
 
     private static JPanel createBoardGUI() {
